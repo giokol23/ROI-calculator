@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Receptionist ROI Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Bitter:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf8f3;
+  --white: #ffffff;
+  --sand: #f0ebe0;
+  --green: #1a9e6e;
+  --green-light: #e8f7f1;
+  --green-mid: #d0f0e4;
+  --amber: #f59e0b;
+  --amber-light: #fef3c7;
+  --red: #e05252;
+  --red-light: #fee8e8;
+  --blue: #3b82f6;
+  --blue-light: #eff6ff;
+  --text: #1a1a2e;
+  --text-mid: #4a4a6a;
+  --text-muted: #9090aa;
+  --border: #e8e4da;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+/* Decorative blobs */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(26,158,110,0.07) 0%, transparent 70%);
+  top: -200px; right: -100px;
+}
+body::after {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+.badge-dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+h1 {
+  font-family: 'Bitter', serif;
+  font-size: clamp(30px, 6vw, 52px);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--green);
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: var(--text-mid);
+  max-width: 460px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+/* STEP CARDS */
+.step-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  animation: fadeUp 0.6s ease both;
+}
+
+.step-card:nth-child(2) { animation-delay: 0.1s; }
+.step-card:nth-child(3) { animation-delay: 0.2s; }
+.step-card:nth-child(4) { animation-delay: 0.3s; }
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.step-num {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.step-num.blue { background: var(--blue-light); color: var(--blue); }
+.step-num.amber { background: var(--amber-light); color: var(--amber); }
+.step-num.red { background: var(--red-light); color: var(--red); }
+
+.step-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* FIELDS */
+.fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 540px) {
+  .fields-grid { grid-template-columns: 1fr; }
+  .step-card { padding: 22px; }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+label .icon { font-size: 15px; }
+
+.input-wrap {
+  position: relative;
+}
+
+.input-prefix, .input-suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-prefix { left: 16px; }
+.input-suffix { right: 16px; }
+
+input[type="number"] {
+  width: 100%;
+  background: var(--sand);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 14px 44px 14px 42px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  outline: none;
+  transition: all 0.2s;
+  -moz-appearance: textfield;
+}
+
+input[type="number"].no-prefix { padding-left: 16px; }
+input[type="number"].no-suffix { padding-right: 16px; }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+input[type="number"]:focus {
+  border-color: var(--green);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(26,158,110,0.1);
+}
+
+input[type="number"]::placeholder { color: #c0bdb5; font-weight: 700; }
+
+/* Slider */
+.slider-field { display: flex; flex-direction: column; gap: 8px; }
+
+.slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--green);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: var(--sand);
+  border-radius: 100px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px; height: 26px;
+  background: var(--green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(26,158,110,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(26,158,110,0.4);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 26px; height: 26px;
+  background: var(--green);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(26,158,110,0.3);
+  cursor: pointer;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Hint text */
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: var(--sand);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+
+.hint strong { color: var(--text-mid); }
+
+/* RESULTS CARD */
+.results-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--green);
+  animation: fadeUp 0.6s ease 0.35s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--green), #4ade80, var(--amber));
+  border-radius: 4px 4px 0 0;
+}
+
+.results-title {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.results-title h2 {
+  font-family: 'Bitter', serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.results-title p {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Big ROI display */
+.roi-hero {
+  background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
+  border-radius: var(--radius);
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.roi-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.roi-number {
+  font-family: 'Bitter', serif;
+  font-size: clamp(48px, 12vw, 80px);
+  font-weight: 600;
+  color: var(--green);
+  line-height: 1;
+  transition: all 0.4s;
+}
+
+.roi-sub {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-mid);
+  margin-top: 8px;
+}
+
+/* Metrics grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 540px) {
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.metric-box {
+  background: var(--sand);
+  border-radius: var(--radius-sm);
+  padding: 18px 14px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.metric-box:hover { transform: translateY(-2px); }
+
+.metric-box.highlight {
+  background: var(--green-light);
+  border: 1.5px solid rgba(26,158,110,0.2);
+}
+
+.metric-box.cost {
+  background: var(--red-light);
+  border: 1.5px solid rgba(224,82,82,0.15);
+}
+
+.metric-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+  transition: all 0.3s;
+}
+
+.metric-box.highlight .metric-val { color: var(--green); }
+.metric-box.cost .metric-val { color: var(--red); }
+
+.metric-lbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Breakeven callout */
+.breakeven-box {
+  background: var(--amber-light);
+  border: 1.5px solid rgba(245,158,11,0.25);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.breakeven-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.breakeven-text strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.breakeven-text span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+
+/* Net gain bar */
+.net-gain-section {
+  background: var(--green-light);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.net-gain-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.net-gain-label span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.net-gain-val {
+  font-family: 'Bitter', serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--green);
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+
+/* Divider */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+}
+
+.section-divider-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+/* Animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes countUp {
+  from { transform: scale(0.95); opacity: 0.5; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.pop {
+  animation: countUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* No data state */
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .results-card { padding: 24px; }
+  .roi-hero { padding: 24px; }
+  .breakeven-box { flex-direction: column; text-align: center; }
+  .net-gain-section { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      AI Receptionist ROI Calculator
+    </div>
+    <h1>See exactly how much<br>your business <em>gains</em></h1>
+    <p class="hero-sub">Fill in your numbers below — we'll calculate your real return on investment in seconds.</p>
+  </div>
+
+  <!-- STEP 1: Your Business -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num blue">1</div>
+      <div>
+        <div class="step-title">📞 Your Call Activity</div>
+        <div class="step-desc">Tell us about your current call volume</div>
+      </div>
+    </div>
+    <div class="fields-grid">
+      <div class="field">
+        <label><span class="icon">📵</span> Daily Missed Calls</label>
+        <div class="input-wrap">
+          <input type="number" id="missedCalls" placeholder="5" min="0" class="no-prefix" oninput="calc()">
+          <span class="input-suffix">/ day</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span class="icon">📅</span> Days Open Per Year</label>
+        <div class="input-wrap">
+          <input type="number" id="daysOpen" placeholder="260" min="1" max="365" class="no-prefix" oninput="calc()">
+          <span class="input-suffix">days</span>
+        </div>
+      </div>
+      <div class="field full slider-field">
+        <label><span class="icon">🎯</span> Lead-to-Sale Close Rate</label>
+        <div class="slider-top">
+          <span style="font-size:13px;font-weight:700;color:var(--text-muted)">How often does a call turn into a paying job?</span>
+          <span class="slider-val" id="rateDisplay">30%</span>
+        </div>
+        <input type="range" id="closeRate" min="1" max="100" value="30" oninput="updateRate();calc()">
+        <div class="slider-labels"><span>1%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Revenue -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num amber">2</div>
+      <div>
+        <div class="step-title">💰 Your Revenue Numbers</div>
+        <div class="step-desc">Help us calculate what each call is worth</div>
+      </div>
+    </div>
+    <div class="fields-grid">
+      <div class="field">
+        <label><span class="icon">💵</span> Average Sale / Job Value</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="avgSale" placeholder="250" min="0" oninput="calc()">
+          <span class="input-suffix">USD</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span class="icon">🏠</span> After-Hours Call % </label>
+        <div class="input-wrap">
+          <input type="number" id="afterHours" placeholder="30" min="0" max="100" class="no-prefix" oninput="calc()">
+          <span class="input-suffix">%</span>
+        </div>
+        <div class="hint">Calls that come in outside business hours — <strong>100% lost</strong> without AI</div>
+      </div>
+      <div class="field">
+        <label><span class="icon">👤</span> Receptionist Hourly Cost</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="receptionistCost" placeholder="18" min="0" oninput="calc()">
+          <span class="input-suffix">/ hr</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span class="icon">⏱️</span> Hours Spent on Calls / Week</label>
+        <div class="input-wrap">
+          <input type="number" id="callHours" placeholder="10" min="0" class="no-prefix" oninput="calc()">
+          <span class="input-suffix">hrs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- RESULTS -->
+  <div class="results-card" id="resultsCard">
+    <div class="results-title">
+      <h2>📊 Your ROI Results</h2>
+      <p>Based on your numbers — updated live as you type</p>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">👆</div>
+      Fill in your numbers above to see your ROI
+    </div>
+
+    <div id="resultsContent" style="display:none">
+
+      <div class="roi-hero">
+        <div class="roi-label">Your Annual Revenue Opportunity</div>
+        <div class="roi-number" id="roiPct">0%</div>
+        <div class="roi-sub" id="roiSub">Total value your business is leaving on the table every year</div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-box highlight">
+          <div class="metric-val" id="mRevRecovered">$0</div>
+          <div class="metric-lbl">Revenue Recovered</div>
+        </div>
+        <div class="metric-box highlight">
+          <div class="metric-val" id="mLaborSaved">$0</div>
+          <div class="metric-lbl">Labor Saved</div>
+        </div>
+        <div class="metric-box highlight">
+          <div class="metric-val" id="mAfterHoursVal">$0</div>
+          <div class="metric-lbl">After-Hours Captured</div>
+        </div>
+        <div class="metric-box" style="grid-column: span 3;">
+          <div class="metric-val" id="mTotalReturn">$0</div>
+          <div class="metric-lbl">Total Annual Return</div>
+        </div>
+      </div>
+
+      <div class="section-divider">
+        <span class="section-divider-text">Your annual opportunity</span>
+      </div>
+
+      <div class="net-gain-section">
+        <div class="net-gain-label">
+          Total Annual Return
+          <span>Revenue recovered + labor saved + after-hours captured</span>
+        </div>
+        <div class="net-gain-val" id="netGainVal">$0</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function updateRate() {
+  const v = document.getElementById('closeRate').value;
+  document.getElementById('rateDisplay').textContent = v + '%';
+}
+
+function fmt(n, short = false) {
+  if (short) {
+    if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+    if (n >= 10000) return '$' + Math.round(n/1000) + 'k';
+  }
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function animEl(el, newVal) {
+  if (el.textContent !== newVal) {
+    el.textContent = newVal;
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+}
+
+function calc() {
+  const missed      = parseFloat(document.getElementById('missedCalls').value) || 0;
+  const days        = parseFloat(document.getElementById('daysOpen').value) || 260;
+  const closeRate   = parseFloat(document.getElementById('closeRate').value) / 100 || 0.3;
+  const avgSale     = parseFloat(document.getElementById('avgSale').value) || 0;
+  const afterHoursPct = parseFloat(document.getElementById('afterHours').value) / 100 || 0;
+  const recepCost   = parseFloat(document.getElementById('receptionistCost').value) || 0;
+  const callHrs     = parseFloat(document.getElementById('callHours').value) || 0;
+  const hasData = (missed > 0 || avgSale > 0) && avgSale > 0;
+
+  document.getElementById('emptyState').style.display = hasData ? 'none' : 'block';
+  document.getElementById('resultsContent').style.display = hasData ? 'block' : 'none';
+
+  if (!hasData) return;
+
+  // Calculations
+  const dailyRevLeak = missed * closeRate * avgSale;
+  const annualRevRecovered = dailyRevLeak * days;
+  const afterHoursRevenue = annualRevRecovered * afterHoursPct;
+  const totalRevRecovered = annualRevRecovered;
+
+  // Labor savings
+  const laborSaved = recepCost * callHrs * 52;
+
+  // Total return
+  const totalReturn = totalRevRecovered + laborSaved + afterHoursRevenue;
+
+  // Update UI
+  animEl(document.getElementById('roiPct'), fmt(totalReturn));
+  document.getElementById('roiSub').textContent =
+    `Total value your business is leaving on the table every year`;
+
+  animEl(document.getElementById('mRevRecovered'), fmt(totalRevRecovered, true));
+  animEl(document.getElementById('mLaborSaved'), fmt(laborSaved, true));
+  animEl(document.getElementById('mAfterHoursVal'), fmt(afterHoursRevenue, true));
+  animEl(document.getElementById('mTotalReturn'), fmt(totalReturn, true));
+  animEl(document.getElementById('netGainVal'), fmt(totalReturn));
+
+  // Color
+  const netEl = document.getElementById('netGainVal');
+  netEl.style.color = 'var(--green)';
+}
+
+// Init
+calc();
+</script>
+</body>
+</html>
